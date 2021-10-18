@@ -1,7 +1,7 @@
-package test
+package factory
 
 import (
-	"design-parttern/factory"
+	"design-pattern/factory"
 	"testing"
 )
 

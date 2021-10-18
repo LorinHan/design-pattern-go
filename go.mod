@@ -1,3 +1,3 @@
-module design-parttern
+module design-pattern
 
-go 1.16
+go 1.17

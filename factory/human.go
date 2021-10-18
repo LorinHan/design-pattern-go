@@ -16,7 +16,7 @@ type chinese struct {
 }
 
 func (c *chinese) Talk() {
-	fmt.Printf("我是%s种人，我说%s\n", c.Color, c.Language)
+	fmt.Printf("我是%s种人，我说%s。\n", c.Color, c.Language)
 }
 
 type american struct {
@@ -24,5 +24,5 @@ type american struct {
 }
 
 func (a *american) Talk() {
-	fmt.Printf("my skin is %s. I speak %s\n", a.Color, a.Language)
+	fmt.Printf("My skin is %s, I speak %s.\n", a.Color, a.Language)
 }
