@@ -235,10 +235,185 @@ func (lf *lazyInitFactory) Get(key string) *product {
 
 ##### 5. 抽象工厂模式
 
-如果抽象工厂里面只定义一个方法，直接创建产品，那么就退化为工厂方法。
+> 抽象工厂模式是工厂方法模式的升级版本，在有多个业务品种、业务分类时，通过抽象工厂模式产生需要的对象是一种非常好的解决方式。
+>
+> 
+>
+> 如果抽象工厂里面只定义一个方法，直接创建产品，那么就退化为工厂方法。
+>
+> 一个对象族（或是一组没有任何关系的对象）都有相同的约束，则可以使用抽象工厂模式。什么意思呢？例如一个文本编辑器和一个图片处理器，都是软件实体，但是 Linux下的文本编辑器和Windows下的文本编辑器虽然功能和界 面都相同，但是代码实现是不同的，图片处理器也有类似情况。也就是具有了共同的约束条件：操作系统类型。
+>
+> 
+>
+> 讲白了就是多种类型之间有着共同的约束，例如CPU和主板，都区分Inter和AMD，再如两个不同的软件，都区分操作系统的不同，两个人种、黄种人和白种人，区分男女；手机和充电器、也是得分android和 ios。
+>
+> 
+>
+> 抽象工厂模式的使用场景定义非常简单：一个对象族（或是一组没有任何关系的对象） 都有相同的约束，则可以使用抽象工厂模式。
 
-一个对象族（或是一组没有任何关系的对象）都有相同的约束，则可以使用抽象工厂模式。什么意思呢？例如一个文本编辑器和一个图片处理器，都是软件实体，但是 Linux下的文本编辑器和Windows下的文本编辑器虽然功能和界 面都相同，但是代码实现是不同的，图片处理器也有类似情况。也就是具有了共同的约束条 件：操作系统类型。
+- 按照抽象工厂模式的定义，模拟一个场景：手机和充电器作为产品，操作系统作为约束条件，比如，IPhone13充电用Lightning接口的充电器，华为P30用Type-C接口的充电器。往下想就是：
 
-讲白了就是多种类型之间有着共同的约束，例如CPU和主板，都区分Inter和AMD，再如两个不同的软件，都区分操作系统的不同，两个人种、黄种人和白种人，区分男女；手机和充电器、也是得分android和 ios。
+  - 工厂得生产两种产品：一个手机、一个充电器；两个工厂：一个IPhone13工厂，一个华为P30工厂。
 
-抽象工厂模式的使用场景定义非常简单：一个对象族（或是一组没有任何关系的对象） 都有相同的约束，则可以使用抽象工厂模式。
+  - 两种产品，一个手机，一个是充电器，那么来一个手机接口和一个充电器接口：
+
+    ```go
+    type phone interface {
+    	Call()  // 打电话
+    	ConnectCharger(charger)  // 连接充电器
+    }
+    
+    type charger interface {
+    	Charge()  // 充电
+    }
+    ```
+
+  - 手机假设有IPhone13和华为P30，分别实现接口
+
+    ```go
+    // IPhone13 is phone的实现类
+    type IPhone13 struct {
+    }
+    
+    func (i IPhone13) Call() {
+    	fmt.Println("IPhone13 is calling...")
+    }
+    
+    func (i IPhone13) ConnectCharger(c charger) {
+    	fmt.Println("IPhone13 is charging...")
+    	c.Charge()
+    }
+    
+    // HuaWeiP30 is phone的实现类 华为P30
+    type HuaWeiP30 struct {
+    }
+    
+    func (h HuaWeiP30) Call() {
+    	fmt.Println("HuaWeiP30 is calling...")
+    }
+    
+    func (h HuaWeiP30) ConnectCharger(c charger) {
+    	fmt.Println("HuaWeiP30 is charging...")
+    	c.Charge()
+    }
+    ```
+
+  - 充电器也分Lightning接口和Type-C，分别实现接口：
+
+    ```go
+    type LightningCharger struct {
+    }
+    
+    func (l LightningCharger) Charge() {
+    	fmt.Println("Charge by Lightning Charger")
+    }
+    
+    type TypeCCharger struct {
+    }
+    
+    func (t TypeCCharger) Charge() {
+    	fmt.Println("Charge by Type-C Charger")
+    }
+    ```
+
+  - 接着说工厂：两个工厂，都是生产手机和充电器，那就来一个工厂接口：
+
+    ```go
+    type phoneFactory interface {
+    	CreatePhone() phone
+    	CreateCharger() charger
+    }
+    ```
+
+  - IPhone13工厂生产IPhone13和Lightning，HuaweiP30工厂生产华为P30手机和Type-C充电器
+
+    ```go
+    type IPhone13Factory struct {
+    }
+    
+    func (f IPhone13Factory) CreatePhone() phone {
+    	return &IPhone13{}
+    }
+    
+    func (f IPhone13Factory) CreateCharger() charger {
+    	return &LightningCharger{}
+    }
+    
+    type HuaWeiP30Factory struct {
+    }
+    
+    func (h HuaWeiP30Factory) CreatePhone() phone {
+    	return &HuaWeiP30{}
+    }
+    
+    func (h HuaWeiP30Factory) CreateCharger() charger {
+    	return &TypeCCharger{}
+    }
+    ```
+
+  - 以上，全部实现完成，接下来看看调用：
+
+    ```go
+    i13Factory := &factory.IPhone13Factory{}
+    iPhone13 := i13Factory.CreatePhone()
+    iPhone13.Call()
+    lightning := i13Factory.CreateCharger()
+    iPhone13.ConnectCharger(lightning)
+    
+    hwFactory := &factory.HuaWeiP30Factory{}
+    hwP30 := hwFactory.CreatePhone()
+    hwP30.Call()
+    typeC := hwFactory.CreateCharger()
+    hwP30.ConnectCharger(typeC)
+    ```
+
+  - 每个工厂生产出来的手机和充电器接口函数都一样，那完全可以面向接口编程，反正调用的函数都一样，那么，也可以这样调用
+
+    ```go
+    // GetPhone 根据类型获取不同的工厂，然后面向接口编程即可
+    func GetPhone(t int) (phone, charger) {
+    	var pf phoneFactory
+    
+    	switch t {
+    	case 1:
+    		pf = &IPhone13Factory{}
+    	case 2:
+    		pf = &HuaWeiP30Factory{}
+    	default:
+    		return nil, nil
+    	}
+    
+    	return pf.CreatePhone(), pf.CreateCharger()
+    }
+    
+    func main() {
+        p1, c1 := factory.GetPhone(1)
+    	p1.Call()
+    	p1.ConnectCharger(c1)
+    
+    	p2, c2 := factory.GetPhone(2)
+    	p2.Call()
+    	p2.ConnectCharger(c2)
+    }
+    ```
+
+- 参考：https://www.zhihu.com/question/20367734
+
+- 优点：封装性，每个产品的实现类不是高层模块要关心的，它要关心的是什么？是接口，是抽象，它不关心对象是如何创建出来，这由谁负责呢？工厂类，只要知道工厂类是谁，就能创建出一个需要的对象并且只需面向它的接口就能使用它的所有能力，无需关心这个对象具体的实现，省时省力。
+
+- 缺陷：抽象工厂模式虽然横向扩展容易，但最大缺点就是垂直扩展非常困难。横向与纵向是对于工厂而言的，如上面例子中的工厂，如果新增一个新型手机xxx，那么只需实现一个新的xxx工厂即可，这是横向：
+
+  ```go
+  type IPhone13Factory struct {										type xxxFactory struct {
+  }																	}
+  
+  func (f IPhone13Factory) CreatePhone() phone {						func (f xxxFactory) CreatePhone() phone {	
+  	return &IPhone13{}													return &xxx{}
+  }																	}
+  	
+  func (f IPhone13Factory) CreateCharger() charger {					func (f xxxFactory) CreateCharger() charger {
+  	return &LightningCharger{}											return &xxxCharger{}	
+  }																	}
+  ```
+
+  但是如果想要多出一个产品，比如这个工厂现在不仅生产手机和充电器了，还要生产耳机了，那么手机工厂的接口 也就是 phoneFactory就得多出一个方法 CreateEarphone()，然后Iphone13工厂实现这个函数生产Air pods，华为p30工厂也得实现，生产Free buds耳机，这就是纵向的扩展。
