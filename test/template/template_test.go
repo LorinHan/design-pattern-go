@@ -6,11 +6,9 @@ import (
 )
 
 func TestTemplate(t *testing.T) {
-	reminder := &template.RemindTemp{
-		Reminder: &template.EmailReminder{},
-	}
+	reminder := template.GetReminder("email")
 	reminder.SendTo(1)
 
-	reminder.Reminder = &template.PhoneReminder{}
+	reminder = template.GetReminder("shortMsg")
 	reminder.SendTo(1)
 }
